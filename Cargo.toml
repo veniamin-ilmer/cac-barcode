@@ -1,0 +1,6 @@
+[package]
+name = "cac-barcode"
+version = "0.1.0"
+authors = ["Veniamin Ilmer <any@email.com>"]
+
+[dependencies]
