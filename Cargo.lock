@@ -1,4 +1,14 @@
 [[package]]
-name = "cac-barcode"
-version = "0.1.0"
+name = "base_custom"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
+[[package]]
+name = "cac-decoder"
+version = "0.1.0"
+dependencies = [
+ "base_custom 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[metadata]
+"checksum base_custom 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "53000ba42e917ca6bc57380754a5f6b4748e37dae0560e3234d400ee07330ab8"

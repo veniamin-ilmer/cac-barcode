@@ -1,6 +1,7 @@
 [package]
-name = "cac-barcode"
+name = "cac-decoder"
 version = "0.1.0"
 authors = ["Veniamin Ilmer <any@email.com>"]
 
 [dependencies]
+base_custom = "0.1.13"
