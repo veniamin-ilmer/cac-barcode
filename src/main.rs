@@ -1,12 +1,9 @@
 //This project was inspired by https://github.com/jkusner/CACBarcode/blob/master/cacbarcode.py
 
-extern crate base_custom;
-use base_custom::BaseCustom;
+extern crate base_custom; use base_custom::BaseCustom;
 
-extern crate chrono;
-use chrono::prelude::*;
-extern crate time;
-use time::Duration;
+extern crate chrono; use chrono::prelude::*;
+extern crate time; use time::Duration;
 
 fn main() {
   if std::env::args().count() > 1 {
@@ -29,14 +26,16 @@ fn main() {
 }
 
 fn decode(data: String) -> String {
-
-  let mut out = Vec::new(); //(Key, Value)
-
   match data.len() {
-    18 => out.push(("Barcode type", "Code39".to_string())),
-    88 | 89 => out.push(("Barcode type", "PDF217".to_string())),
+    18 => return decode_code39(data),
+    88 | 89 => return decode_pdf217(data),
     _ => return format!("Incorrect barcode length: {}. Make sure to include all spaces.", data.len()),
   }
+}
+
+fn decode_pdf217(data: String) -> String {
+  let mut out = Vec::new(); //(Key, Value)
+  out.push(("Barcode type", "PDF217".to_string()));
 
   let base32 = BaseCustom::<String>::new("0123456789ABCDEFGHIJKLMNOPQRSTUV", None);
   let base_time = Utc.ymd(1000, 1, 1);
@@ -99,18 +98,51 @@ fn decode(data: String) -> String {
   out.push(("Card Expiration Date", (base_time + Duration::days(days)).format("%a, %e %b %Y")));
   
   //Card Instance Identifier (Random)
-  let cii = data_chars.next().unwrap();
-  out.push(("Card Instance Identifier (Random)", cii.to_string());
+  out.push(("Card Instance Identifier (Random)", data_chars.next().unwrap().to_string()));
 
   if data.len() == 89 {
     //Middle Initial
     let initial = data_chars.next().unwrap();
-    out.push(("Middle Initial", initial.to_string());
+    out.push(("Middle Initial", initial.to_string()));
   }
   
   out.iter().map(|(key, val)| format!("{}: {}\n", key, val)).collect::<String>()
 }
+    
+fn decode_code39(data: String) -> String {
+  let mut out = Vec::new(); //(Key, Value)
+  out.push(("Barcode type", "Code39".to_string()));
+  
+  //Version
+  let version = data_chars.next().unwrap();
+  match version {
+    '1' => out.push(("Barcode version", version.to_string())),
+    _ => return format!("Unknown barcode version {}", version),
+  }
 
+  //Personal Designator Identifier (Base 32)
+  let pdi = data_chars.by_ref().take(6).collect::<String>();
+  out.push(("Personal Designator Identifier", base32.decimal(pdi).to_string()));
+  
+  //Personal Designator Type
+  out.push(("Personal Designator Type", lookup_pdt(data_chars.next().unwrap())));
+
+  //Electronic Data Interchange Person Identifier (base 32)
+  let edipi = data_chars.by_ref().take(7).collect::<String>();
+  out.push(("Electronic Data Interchange Person Identifier", base32.decimal(edipi).to_string()));
+
+  //Personnel Category Code
+  out.push(("Personnel Category Code", loop_ppc(data_chars.next().unwrap())));
+  
+  //Branch
+  out.push(("Branch", lookup_branch(data_chars.next().unwrap())));
+  
+  //Card Instance Identifier (Random)
+  out.push(("Card Instance Identifier (Random)", data_chars.next().unwrap().to_string()));
+  
+  out.iter().map(|(key, val)| format!("{}: {}\n", key, val)).collect::<String>()
+}
+    
 fn lookup_ppt(ppt: char) -> String {
   match pdt {
     'S' => "Social Security Number (SSN)".to_string(),
