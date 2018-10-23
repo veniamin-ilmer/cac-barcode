@@ -5,3 +5,5 @@ authors = ["Veniamin Ilmer <any@email.com>"]
 
 [dependencies]
 base_custom = "0.1.13"
+chrono = "0.4.6"
+time = "0.1.40"
